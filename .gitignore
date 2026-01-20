@@ -26,3 +26,16 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+
+# Build artifacts
+target/
+
+# Virtual environment
+.venv/
+
+# Vendored dependencies (managed by uv)
+workflow/pytz/
+workflow/tzlocal/
+workflow/delorean/
+workflow/dateutil/
+workflow/six.py

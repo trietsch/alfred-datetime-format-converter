@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
 
 import alfred
 import calendar
@@ -10,6 +11,42 @@ def get_timezone():
     if not tz:
         tz = 'UTC'
     return tz
+
+def parse_interval(interval_str):
+    """
+    Parse interval string and return timedelta
+    Format: "<number> <unit>" or "interval <number> <unit>"
+    Supported units: second(s), minute(s), hour(s), day(s), week(s)
+    """
+    # Make "interval" keyword optional
+    pattern = r'(?:interval\s+)?(\d+)\s+(second|seconds|minute|minutes|hour|hours|day|days|week|weeks)'
+    match = re.search(pattern, interval_str, re.IGNORECASE)
+
+    if not match:
+        return None
+
+    amount = int(match.group(1))
+    unit = match.group(2).lower()
+
+    # Normalize unit to singular form and map to timedelta kwargs
+    unit_map = {
+        'second': 'seconds',
+        'seconds': 'seconds',
+        'minute': 'minutes',
+        'minutes': 'minutes',
+        'hour': 'hours',
+        'hours': 'hours',
+        'day': 'days',
+        'days': 'days',
+        'week': 'weeks',
+        'weeks': 'weeks',
+    }
+
+    timedelta_unit = unit_map.get(unit)
+    if timedelta_unit:
+        return timedelta(**{timedelta_unit: amount})
+
+    return None
 
 def process(query_str):
     """ Entry point """
@@ -23,7 +60,35 @@ def parse_query_value(query_str):
     """ Return value for the query string """
     try:
         query_str = str(query_str).strip('"\' ')
-        if query_str == 'now':
+
+        # Check for interval expressions (e.g., "now - 1 day" or "now - interval 1 day")
+        interval_pattern = r'(.+?)\s*([+-])\s*(?:interval\s+)?(\d+\s+(?:second|seconds|minute|minutes|hour|hours|day|days|week|weeks))'
+        interval_match = re.match(interval_pattern, query_str, re.IGNORECASE)
+
+        if interval_match:
+            base_str = interval_match.group(1).strip()
+            operator = interval_match.group(2)
+            interval_str = interval_match.group(3)
+
+            # Parse base datetime
+            if base_str == 'now':
+                d = utcnow()
+            else:
+                try:
+                    if str(base_str).isdigit() and len(base_str) == 13:
+                        base_str = int(base_str) / 1000
+                    d = epoch(float(base_str))
+                except ValueError:
+                    d = parse(str(base_str), get_timezone())
+
+            # Parse and apply interval
+            interval = parse_interval(interval_str)
+            if interval:
+                if operator == '-':
+                    d = d - interval
+                else:  # operator == '+'
+                    d = d + interval
+        elif query_str == 'now':
             d = utcnow()
         else:
             # Parse datetime string or timestamp
@@ -59,12 +124,13 @@ def alfred_items_for_value(value):
     ))
     index += 1
 
+    item_value_ms = int(round(datetime.timestamp(value.datetime) * 1000))
     results.append(alfred.Item(
-        title=str(int(round(datetime.timestamp(value.datetime) * 1000))),
+        title=str(item_value_ms),
         subtitle=u'UTC MilliSecond Timestamp',
         attributes={
             'uid': alfred.uid(index),
-            'arg': item_value,
+            'arg': item_value_ms,
         },
         icon='icon.png',
     ))

@@ -4,8 +4,6 @@
 <dict>
 	<key>bundleid</key>
 	<string>com.alexmerkel.datetime-format-converter</string>
-	<key>category</key>
-	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
 		<key>78186B00-90E0-437B-8F42-09282A73D2E9</key>
@@ -66,7 +64,7 @@
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Examples: 1364302555, 2013-01-15 19:41:06, now</string>
+				<string>Examples: 1364302555, 2013-01-15 19:41:06, now, now - 1 day</string>
 				<key>title</key>
 				<string>Enter timestamp, datetime string, or "now"</string>
 				<key>type</key>
@@ -130,8 +128,10 @@ This workflow uses these awesome Python projects:
 			<real>80</real>
 		</dict>
 	</dict>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
-	<string>0.4</string>
+	<string>1.0.0</string>
 	<key>webaddress</key>
 	<string>https://alexmerkel.com</string>
 </dict>

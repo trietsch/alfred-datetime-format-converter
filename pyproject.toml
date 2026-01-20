@@ -1,0 +1,29 @@
+[project]
+name = "alfred-datetime-format-converter"
+version = "1.0.0"
+description = "Alfred workflow for converting between timestamps and formatted datetime strings"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+    { name = "Michael Waterfall" },
+    { name = "Alex Merkel" },
+    { name = "Robin Trietsch" }
+]
+
+dependencies = [
+    "delorean>=1.0.0",
+    "pytz>=2022.1",
+    "tzlocal>=4.0",
+    "python-dateutil>=2.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["workflow"]
