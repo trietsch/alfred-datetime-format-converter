@@ -35,12 +35,3 @@ target/
 
 # Claude Code
 .claude/
-
-# Vendored dependencies (managed by uv)
-workflow/pytz/
-workflow/tzlocal/
-workflow/delorean/
-workflow/dateutil/
-workflow/humanize/
-workflow/babel/
-workflow/six.py

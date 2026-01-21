@@ -49,6 +49,7 @@ If the variable is not set, UTC is used by default.
   - Supported units: seconds, minutes, hours, days, weeks
   - Optional `interval` keyword: both `now - 1 day` and `now - interval 1 day` work
 - **Millisecond timestamp copy fix:** The millisecond timestamp can now be properly copied to clipboard
+- **Zero external dependencies:** Rewritten to use only Python standard library (no pytz, delorean, etc.)
 
 ## Development
 
@@ -80,19 +81,19 @@ make install
 - `make install` - Install to your Alfred preferences
 - `make clean` - Clean build artifacts
 
+## Technical Details
+
+This workflow uses only Python's standard library (datetime, timedelta, timezone, re, calendar) with no external dependencies. The workflow is extremely lightweight at ~11KB.
+
 ## Acknowledgments
 
 This fork is based on the excellent work by:
 - [Michael Waterfall](https://github.com/mwaterfall/alfred-datetime-format-converter) - Original workflow
 - [Alex Merkel](https://github.com/alexmerkel/alfred-datetime-format-converter) - Python 3 compatibility
 
+Uses [Alfred Python](https://github.com/nikipore/alfred-python) by Jan Müller (Apache 2.0 License)
+
 ## License
 
 Copyright (c) 2013 Michael Waterfall, published under the MIT License
-
-Includes packages:
-* [pytz](https://pythonhosted.org/pytz/) - MIT License
-* [tzlocal](https://github.com/regebro/tzlocal) - MIT License
-* [alfred-python](https://github.com/nikipore/alfred-python) - Apache 2.0 License
-* [delorean](https://github.com/myusuf3/delorean) - MIT License
 

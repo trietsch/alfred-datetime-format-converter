@@ -1,24 +1,17 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
+import calendar
 
 import alfred
-import calendar
-from delorean import utcnow, parse, epoch
 
-def get_timezone():
-    tz = alfred.env_arg('timezone')
-    if not tz:
-        tz = 'UTC'
-    return tz
 
 def parse_interval(interval_str):
     """
-    Parse interval string and return timedelta
+    Parse interval string and return timedelta.
     Format: "<number> <unit>" or "interval <number> <unit>"
     Supported units: second(s), minute(s), hour(s), day(s), week(s)
     """
-    # Make "interval" keyword optional
     pattern = r'(?:interval\s+)?(\d+)\s+(second|seconds|minute|minutes|hour|hours|day|days|week|weeks)'
     match = re.search(pattern, interval_str, re.IGNORECASE)
 
@@ -28,7 +21,7 @@ def parse_interval(interval_str):
     amount = int(match.group(1))
     unit = match.group(2).lower()
 
-    # Normalize unit to singular form and map to timedelta kwargs
+    # Map units to timedelta kwargs
     unit_map = {
         'second': 'seconds',
         'seconds': 'seconds',
@@ -48,20 +41,54 @@ def parse_interval(interval_str):
 
     return None
 
+
+def parse_datetime_string(dt_str):
+    """
+    Parse a datetime string in various formats.
+    Returns a timezone-aware datetime object in UTC.
+    """
+    # Remove trailing milliseconds if present (e.g., ".000")
+    dt_str = re.sub(r'\.(\d+)$', '', dt_str)
+
+    # Try common datetime formats
+    formats = [
+        '%Y-%m-%d %H:%M:%S',      # 2026-01-16 10:19:55
+        '%Y-%m-%dT%H:%M:%S',      # 2026-01-16T10:19:55
+        '%Y-%m-%d',               # 2026-01-16
+        '%d %b %Y %H:%M:%S',      # 16 Jan 2026 10:19:55
+        '%a, %d %b %Y %H:%M:%S',  # Fri, 16 Jan 2026 10:19:55
+    ]
+
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(dt_str, fmt)
+            # Make timezone aware (assume UTC if no timezone info)
+            return dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+
+    # If all formats fail, raise ValueError
+    raise ValueError(f"Could not parse datetime string: {dt_str}")
+
+
 def process(query_str):
-    """ Entry point """
+    """Entry point for Alfred workflow."""
     value = parse_query_value(query_str)
     if value is not None:
         results = alfred_items_for_value(value)
-        xml = alfred.xml(results) # compiles the XML answer
-        alfred.write(xml) # writes the XML back to Alfred
+        xml = alfred.xml(results)
+        alfred.write(xml)
+
 
 def parse_query_value(query_str):
-    """ Return value for the query string """
+    """
+    Parse query string and return a datetime object.
+    Returns a timezone-aware datetime in UTC.
+    """
     try:
         query_str = str(query_str).strip('"\' ')
 
-        # Check for interval expressions (e.g., "now - 1 day" or "now - interval 1 day")
+        # Check for interval expressions (e.g., "now - 1 day" or "2026-01-16 10:19:55 - 3 hours")
         interval_pattern = r'(.+?)\s*([+-])\s*(?:interval\s+)?(\d+\s+(?:second|seconds|minute|minutes|hour|hours|day|days|week|weeks))'
         interval_match = re.match(interval_pattern, query_str, re.IGNORECASE)
 
@@ -72,101 +99,115 @@ def parse_query_value(query_str):
 
             # Parse base datetime
             if base_str == 'now':
-                d = utcnow()
+                dt = datetime.now(timezone.utc)
             else:
+                # Try parsing as timestamp first
                 try:
-                    if str(base_str).isdigit() and len(base_str) == 13:
-                        base_str = int(base_str) / 1000
-                    d = epoch(float(base_str))
-                except ValueError:
-                    d = parse(str(base_str), get_timezone())
+                    if base_str.isdigit():
+                        # Millisecond timestamp
+                        if len(base_str) == 13:
+                            timestamp = int(base_str) / 1000
+                        else:
+                            timestamp = float(base_str)
+                        dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                    else:
+                        # Try parsing as datetime string
+                        dt = parse_datetime_string(base_str)
+                except (ValueError, OSError):
+                    # If timestamp parsing fails, try datetime string
+                    dt = parse_datetime_string(base_str)
 
             # Parse and apply interval
             interval = parse_interval(interval_str)
             if interval:
                 if operator == '-':
-                    d = d - interval
+                    dt = dt - interval
                 else:  # operator == '+'
-                    d = d + interval
-        elif query_str == 'now':
-            d = utcnow()
-        else:
-            # Parse datetime string or timestamp
-            try:
-                if str(query_str).isdigit() and len(query_str) == 13:
-                    query_str = int(query_str) / 1000
-                d = epoch(float(query_str))
-            except ValueError:
-                d = parse(str(query_str), get_timezone())
+                    dt = dt + interval
+
+            return dt
+
+        # Handle "now" keyword
+        if query_str == 'now':
+            return datetime.now(timezone.utc)
+
+        # Try parsing as timestamp
+        try:
+            if query_str.isdigit():
+                # Millisecond timestamp
+                if len(query_str) == 13:
+                    timestamp = int(query_str) / 1000
+                else:
+                    timestamp = float(query_str)
+                return datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        except (ValueError, OSError):
+            pass
+
+        # Try parsing as datetime string
+        return parse_datetime_string(query_str)
+
     except (TypeError, ValueError):
-        d = None
-    return d
+        return None
 
-def alfred_items_for_value(value):
-    """
-    Given a delorean datetime object, return a list of
-    alfred items for each of the results
-    """
 
+def alfred_items_for_value(dt):
+    """
+    Given a datetime object, return a list of Alfred items
+    for each of the result formats.
+    """
     index = 0
     results = []
 
-    # First item as timestamp
-    item_value = calendar.timegm(value.datetime.utctimetuple())
+    # UTC Timestamp (seconds)
+    timestamp = int(dt.timestamp())
     results.append(alfred.Item(
-        title=str(item_value),
-        subtitle=u'UTC Timestamp',
+        title=str(timestamp),
+        subtitle='UTC Timestamp',
         attributes={
             'uid': alfred.uid(index),
-            'arg': item_value,
+            'arg': timestamp,
         },
         icon='icon.png',
     ))
     index += 1
 
-    item_value_ms = int(round(datetime.timestamp(value.datetime) * 1000))
+    # UTC Millisecond Timestamp
+    timestamp_ms = int(dt.timestamp() * 1000)
     results.append(alfred.Item(
-        title=str(item_value_ms),
-        subtitle=u'UTC MilliSecond Timestamp',
+        title=str(timestamp_ms),
+        subtitle='UTC MilliSecond Timestamp',
         attributes={
             'uid': alfred.uid(index),
-            'arg': item_value_ms,
+            'arg': timestamp_ms,
         },
         icon='icon.png',
     ))
     index += 1
 
-    # Various formats
-    tz = get_timezone()
+    # Various datetime formats
     formats = [
-        # 1937-01-01 12:00:27
-        ("%Y-%m-%d %H:%M:%S", tz),
-        # 19 May 2002 15:21:36
-        ("%d %b %Y %H:%M:%S", tz),
-        # Sun, 19 May 2002 15:21:36
-        ("%a, %d %b %Y %H:%M:%S", tz),
-        # 1937-01-01T12:00:27
-        ("%Y-%m-%dT%H:%M:%S", tz),
-        # 1996-12-19T16:39:57-0800
-        ("%Y-%m-%dT%H:%M:%S%z", tz),
+        ('%Y-%m-%d %H:%M:%S', 'YYYY-MM-DD HH:MM:SS (UTC)'),
+        ('%d %b %Y %H:%M:%S', 'DD Mon YYYY HH:MM:SS (UTC)'),
+        ('%a, %d %b %Y %H:%M:%S', 'Day, DD Mon YYYY HH:MM:SS (UTC)'),
+        ('%Y-%m-%dT%H:%M:%S', 'ISO 8601 (UTC)'),
+        ('%Y-%m-%dT%H:%M:%S%z', 'ISO 8601 with timezone'),
     ]
-    for format, description in formats:
-        tz_value = value
-        if description:
-            tz_value = value.shift(description)
-        item_value = tz_value.datetime.strftime(format)
+
+    for fmt, description in formats:
+        formatted = dt.strftime(fmt)
         results.append(alfred.Item(
-            title=str(item_value),
+            title=formatted,
             subtitle=description,
             attributes={
                 'uid': alfred.uid(index),
-                'arg': item_value,
+                'arg': formatted,
             },
-        icon='icon.png',
+            icon='icon.png',
         ))
         index += 1
 
     return results
+
 
 if __name__ == "__main__":
     try:

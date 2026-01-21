@@ -115,12 +115,9 @@ New features:
 - Interval arithmetic (e.g., "now - 1 day", "2026-01-16 10:19:55 - 3 hours")
 - Millisecond timestamp copy fix
 - Modern Python tooling with uv
+- Rewritten to use only Python standard library (no external dependencies)
 
-This workflow uses these awesome Python projects:
-* Delorean by Mahdi Yusuf: https://github.com/myusuf3/delorean
-* Alfred Python by Jan Müller: https://github.com/nikipore/alfred-python
-* pytz by Stuart Bishop: https://pythonhosted.org/pytz/
-* tzlocal by Lennart Regebro: https://github.com/regebro/tzlocal</string>
+Uses Alfred Python by Jan Müller: https://github.com/nikipore/alfred-python</string>
 	<key>uidata</key>
 	<dict>
 		<key>78186B00-90E0-437B-8F42-09282A73D2E9</key>

@@ -12,23 +12,14 @@ target/:
 sync:
 	uv sync
 
-# Vendor dependencies into workflow directory
+# Vendor dependencies into workflow directory (no external dependencies needed)
 vendor: sync
-	@echo "Vendoring dependencies into workflow directory..."
-	@# Remove old vendored dependencies (keep alfred.py, process.py, icon.png, info.plist)
+	@echo "No external dependencies to vendor - using Python standard library only."
+	@# Clean up any old vendored dependencies
 	@rm -rf $(WORKFLOW_DIR)/pytz $(WORKFLOW_DIR)/tzlocal $(WORKFLOW_DIR)/delorean $(WORKFLOW_DIR)/dateutil $(WORKFLOW_DIR)/humanize $(WORKFLOW_DIR)/babel $(WORKFLOW_DIR)/six.py
-	@# Copy dependencies from venv to workflow
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/pytz $(WORKFLOW_DIR)/
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/tzlocal $(WORKFLOW_DIR)/
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/delorean $(WORKFLOW_DIR)/
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/dateutil $(WORKFLOW_DIR)/
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/humanize $(WORKFLOW_DIR)/
-	@cp -r $(VENV_DIR)/lib/python*/site-packages/babel $(WORKFLOW_DIR)/
-	@cp $(VENV_DIR)/lib/python*/site-packages/six.py $(WORKFLOW_DIR)/
 	@# Clean up __pycache__ and .pyc files
 	@find $(WORKFLOW_DIR) -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	@find $(WORKFLOW_DIR) -type f -name "*.pyc" -delete 2>/dev/null || true
-	@echo "Dependencies vendored successfully."
 
 clean:
 	@rm -rf $(TARGET_DIR)
