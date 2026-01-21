@@ -14,6 +14,7 @@ Simply type `df` followed by:
 - `now` - current timestamp
 - A UTC unix timestamp (seconds or milliseconds)
 - A formatted datetime string (with or without milliseconds, assumed UTC)
+- ISO 8601 format with milliseconds and Z suffix (e.g., `2026-01-19T08:22:24.709Z`)
 - **NEW:** `now - interval 1 day` - time arithmetic with intervals
 - **NEW:** `now + 3 hours` - add or subtract time
 
@@ -28,6 +29,7 @@ df 1737379200000
 df 2013-01-15 19:41:06
 df 2026-01-16 10:19:55
 df 2026-01-16 10:19:55.000
+df 2026-01-19T08:22:24.709Z
 df now - 1 day
 df now - interval 3 hours
 df now + 2 weeks
@@ -45,6 +47,8 @@ If the variable is not set, UTC is used by default.
 
 ## New Features in This Fork
 
+- **ISO 8601 with milliseconds:** Full support for parsing and outputting ISO 8601 format with milliseconds (e.g., `2026-01-19T08:22:24.709Z`)
+- **Millisecond precision:** Output formats now include millisecond precision timestamps and formatted strings
 - **Interval arithmetic:** Add or subtract time from dates using natural language
   - Supported units: seconds, minutes, hours, days, weeks
   - Optional `interval` keyword: both `now - 1 day` and `now - interval 1 day` work
@@ -86,12 +90,12 @@ make install
 
 ### Testing
 
-The project includes a comprehensive test suite with 24 tests covering:
+The project includes a comprehensive test suite with 25 tests covering:
 - Interval parsing (with and without 'interval' keyword)
-- Datetime string parsing (various formats including ISO 8601)
+- Datetime string parsing (various formats including ISO 8601 with milliseconds)
 - Unix timestamp parsing (seconds and milliseconds)
 - Query value parsing with interval arithmetic
-- Alfred item generation
+- Alfred item generation (including millisecond precision output)
 - End-to-end integration tests
 
 Run tests with:
