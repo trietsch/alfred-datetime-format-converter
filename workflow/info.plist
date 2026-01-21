@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>com.alexmerkel.datetime-format-converter</string>
+	<string>dev.trietsch.datetime-format-converter</string>
 	<key>connections</key>
 	<dict>
 		<key>78186B00-90E0-437B-8F42-09282A73D2E9</key>
@@ -21,9 +21,9 @@
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>Alex Merkel</string>
+	<string>Robin Trietsch</string>
 	<key>description</key>
-	<string>Convert timestamps and datetime strings into various formats, based on version by Michael Waterfall and Yanhe</string>
+	<string>Convert timestamps and datetime strings into various formats, based on version by Michael Waterfall, updated by Alex Merkel. Modified by Robin Trietsch, to use modern Python tooling and added new functionality</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -100,13 +100,23 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Based on work by Michael Waterfall and Yanhe
-https://github.com/mwaterfall/alfred-datetime-format-converter
-https://github.com/kissghosts/alfred-datetime-format-converter/tree/alfred4-timezone
+	<string>Fork of alexmerkel/alfred-datetime-format-converter with additional functionality.
 
+Original work by Michael Waterfall:
+https://github.com/mwaterfall/alfred-datetime-format-converter
+
+Updated by Alex Merkel:
+https://github.com/alexmerkel/alfred-datetime-format-converter
+
+Modified by Robin Trietsch:
+https://github.com/trietsch/alfred-datetime-format-converter
+
+New features:
+- Interval arithmetic (e.g., "now - 1 day", "2026-01-16 10:19:55 - 3 hours")
+- Millisecond timestamp copy fix
+- Modern Python tooling with uv
 
 This workflow uses these awesome Python projects:
-
 * Delorean by Mahdi Yusuf: https://github.com/myusuf3/delorean
 * Alfred Python by Jan Müller: https://github.com/nikipore/alfred-python
 * pytz by Stuart Bishop: https://pythonhosted.org/pytz/
@@ -133,6 +143,6 @@ This workflow uses these awesome Python projects:
 	<key>version</key>
 	<string>1.0.0</string>
 	<key>webaddress</key>
-	<string>https://alexmerkel.com</string>
+	<string>https://github.com/trietsch/alfred-datetime-format-converter</string>
 </dict>
 </plist>

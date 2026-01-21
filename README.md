@@ -13,7 +13,7 @@ Download the latest release from the [releases page](https://github.com/trietsch
 Simply type `df` followed by:
 - `now` - current timestamp
 - A UTC unix timestamp (seconds or milliseconds)
-- A formatted datetime string
+- A formatted datetime string (with or without milliseconds, assumed UTC)
 - **NEW:** `now - interval 1 day` - time arithmetic with intervals
 - **NEW:** `now + 3 hours` - add or subtract time
 
@@ -26,10 +26,13 @@ df now
 df 1364302555
 df 1737379200000
 df 2013-01-15 19:41:06
+df 2026-01-16 10:19:55
+df 2026-01-16 10:19:55.000
 df now - 1 day
 df now - interval 3 hours
 df now + 2 weeks
 df 1364302555 - 1 hour
+df 2026-01-16 10:19:55 - 2 days
 ```
 
 ### Timezone Configuration
