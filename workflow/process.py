@@ -47,8 +47,18 @@ def parse_datetime_string(dt_str):
     Parse a datetime string in various formats.
     Returns a timezone-aware datetime object in UTC.
     """
-    # Remove trailing milliseconds if present (e.g., ".000")
-    dt_str = re.sub(r'\.(\d+)$', '', dt_str)
+    # Remove trailing 'Z' timezone indicator if present (indicates UTC)
+    dt_str = re.sub(r'Z$', '', dt_str)
+
+    # Extract and remove trailing milliseconds if present (e.g., ".000" or ".709")
+    milliseconds = 0
+    ms_match = re.search(r'\.(\d+)$', dt_str)
+    if ms_match:
+        ms_str = ms_match.group(1)
+        # Pad or truncate to 3 digits and convert to microseconds
+        ms_str = ms_str.ljust(3, '0')[:3]
+        milliseconds = int(ms_str)
+        dt_str = re.sub(r'\.(\d+)$', '', dt_str)
 
     # Try common datetime formats
     formats = [
@@ -62,6 +72,8 @@ def parse_datetime_string(dt_str):
     for fmt in formats:
         try:
             dt = datetime.strptime(dt_str, fmt)
+            # Add milliseconds as microseconds (milliseconds * 1000)
+            dt = dt.replace(microsecond=milliseconds * 1000)
             # Make timezone aware (assume UTC if no timezone info)
             return dt.replace(tzinfo=timezone.utc)
         except ValueError:
@@ -184,6 +196,9 @@ def alfred_items_for_value(dt):
     ))
     index += 1
 
+    # Get milliseconds for formats that need them
+    milliseconds = int(dt.microsecond / 1000)
+
     # Various datetime formats
     formats = [
         ('%Y-%m-%d %H:%M:%S', 'YYYY-MM-DD HH:MM:SS (UTC)'),
@@ -194,6 +209,25 @@ def alfred_items_for_value(dt):
     ]
 
     for fmt, description in formats:
+        formatted = dt.strftime(fmt)
+        results.append(alfred.Item(
+            title=formatted,
+            subtitle=description,
+            attributes={
+                'uid': alfred.uid(index),
+                'arg': formatted,
+            },
+            icon='icon.png',
+        ))
+        index += 1
+
+    # Formats with milliseconds
+    ms_formats = [
+        (f'%Y-%m-%d %H:%M:%S.{milliseconds:03d}', 'YYYY-MM-DD HH:MM:SS.mmm (UTC)'),
+        (f'%Y-%m-%dT%H:%M:%S.{milliseconds:03d}Z', 'ISO 8601 with milliseconds (UTC)'),
+    ]
+
+    for fmt, description in ms_formats:
         formatted = dt.strftime(fmt)
         results.append(alfred.Item(
             title=formatted,

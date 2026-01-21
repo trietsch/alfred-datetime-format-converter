@@ -82,11 +82,12 @@ def test_parse_datetime_with_seconds():
 
 
 def test_parse_datetime_with_milliseconds():
-    """Test parsing datetime with milliseconds (they should be stripped)."""
+    """Test parsing datetime with milliseconds (they should be preserved)."""
     result = parse_datetime_string('2026-01-16 10:19:55.000')
     assert result is not None
     assert result.year == 2026
     assert result.second == 55
+    assert result.microsecond == 0
 
 
 def test_parse_datetime_iso_format():
@@ -94,6 +95,20 @@ def test_parse_datetime_iso_format():
     result = parse_datetime_string('2026-01-16T10:19:55')
     assert result is not None
     assert result.year == 2026
+
+
+def test_parse_datetime_iso_format_with_z():
+    """Test parsing ISO 8601 format with milliseconds and Z suffix."""
+    result = parse_datetime_string('2026-01-19T08:22:24.709Z')
+    assert result is not None
+    assert result.year == 2026
+    assert result.month == 1
+    assert result.day == 19
+    assert result.hour == 8
+    assert result.minute == 22
+    assert result.second == 24
+    assert result.microsecond == 709000  # 709 milliseconds = 709000 microseconds
+    assert result.tzinfo == timezone.utc
 
 
 def test_parse_date_only():
@@ -216,8 +231,8 @@ def test_generate_items_for_datetime():
     dt = datetime(2026, 1, 16, 10, 19, 55, tzinfo=timezone.utc)
     items = alfred_items_for_value(dt)
 
-    # Should generate 7 items (timestamp, ms timestamp, + 5 formats)
-    assert len(items) == 7
+    # Should generate 9 items (timestamp, ms timestamp, + 5 formats + 2 ms formats)
+    assert len(items) == 9
 
     # First item should be UTC timestamp
     assert items[0].title == '1768558795'
@@ -230,6 +245,24 @@ def test_generate_items_for_datetime():
     # Check that formatted strings are present
     assert '2026-01-16 10:19:55' in items[2].title
     assert '16 Jan 2026' in items[3].title
+
+    # Check that millisecond formats are present
+    assert '2026-01-16 10:19:55.000' in items[7].title
+    assert '2026-01-16T10:19:55.000Z' in items[8].title
+
+
+def test_generate_items_with_milliseconds():
+    """Test generating Alfred items with non-zero milliseconds."""
+    # Create datetime with 709 milliseconds (709000 microseconds)
+    dt = datetime(2026, 1, 19, 8, 22, 24, 709000, tzinfo=timezone.utc)
+    items = alfred_items_for_value(dt)
+
+    # Should generate 9 items
+    assert len(items) == 9
+
+    # Check that millisecond formats contain correct milliseconds
+    assert '2026-01-19 08:22:24.709' in items[7].title
+    assert '2026-01-19T08:22:24.709Z' in items[8].title
 
 
 def test_items_have_required_attributes():
@@ -256,6 +289,7 @@ def test_all_common_use_cases():
         '2026-01-16 10:19:55',
         '2026-01-16 10:19:55.000',
         '2026-01-16',
+        '2026-01-19T08:22:24.709Z',
         'now - 1 day',
         'now + 2 weeks',
         '2026-01-16 10:19:55 - 3 hours',
