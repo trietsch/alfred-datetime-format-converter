@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/trietsch/alfred-datetime-format-converter/compare/v1.1.0...v1.2.0) (2026-01-21)
+
+
+### Features
+
+* add tests ([7721c99](https://github.com/trietsch/alfred-datetime-format-converter/commit/7721c99c36ebcfda9eb7229207a4bf88e6f57a86))
+
 # [1.1.0](https://github.com/trietsch/alfred-datetime-format-converter/compare/v1.0.0...v1.1.0) (2026-01-21)
 
 
