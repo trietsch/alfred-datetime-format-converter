@@ -1,4 +1,4 @@
-.PHONY: clean workflow install sync vendor
+.PHONY: clean workflow install sync vendor test
 
 TARGET_DIR := target
 WORKFLOW_FILE := $(TARGET_DIR)/alfred-datetime-format-converter.alfredworkflow
@@ -24,8 +24,13 @@ vendor: sync
 clean:
 	@rm -rf $(TARGET_DIR)
 
+# Run tests
+test:
+	@echo "Running tests..."
+	@uv run pytest tests/ -v
+
 workflow: vendor clean target/
-	cd $(WORKFLOW_DIR) && zip -r ../$(WORKFLOW_FILE) . -x "*.pyc" -x "__pycache__/*" -x "*/__pycache__/*" -x "*.dist-info/*" -x "*/*.dist-info/*"
+	cd $(WORKFLOW_DIR) && zip -r ../$(WORKFLOW_FILE) . -x "*.pyc" -x "__pycache__/*" -x "*/__pycache__/*" -x "*.dist-info/*" -x "*/*.dist-info/*" -x "tests/*"
 
 install: vendor
 	@echo "Installing workflow to Alfred..."

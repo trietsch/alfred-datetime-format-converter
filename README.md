@@ -53,12 +53,14 @@ If the variable is not set, UTC is used by default.
 
 ## Development
 
-This project uses [uv](https://docs.astral.sh/uv/) for Python dependency management.
+This project uses [uv](https://docs.astral.sh/uv/) for Python dependency management and pytest for testing.
 
 ### Requirements
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - Python 3.8+
+
+The workflow itself has zero runtime dependencies (only Python stdlib), but development requires pytest.
 
 ### Setup
 
@@ -77,9 +79,31 @@ make install
 
 - `make sync` - Install dependencies with uv
 - `make vendor` - Vendor dependencies into workflow directory
+- `make test` - Run the test suite
 - `make workflow` - Build the .alfredworkflow file
 - `make install` - Install to your Alfred preferences
 - `make clean` - Clean build artifacts
+
+### Testing
+
+The project includes a comprehensive test suite with 24 tests covering:
+- Interval parsing (with and without 'interval' keyword)
+- Datetime string parsing (various formats including ISO 8601)
+- Unix timestamp parsing (seconds and milliseconds)
+- Query value parsing with interval arithmetic
+- Alfred item generation
+- End-to-end integration tests
+
+Run tests with:
+```bash
+make test
+# or directly with uv
+uv run pytest tests/ -v
+```
+
+Tests run automatically in CI before each release.
+
+**Note:** pytest is a dev dependency only and is not included in the workflow bundle.
 
 ## Technical Details
 
