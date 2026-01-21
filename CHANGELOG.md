@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/trietsch/alfred-datetime-format-converter/compare/v1.0.0...v1.1.0) (2026-01-21)
+
+
+### Features
+
+* reimplement workflow to use zero dependencies ([07aea79](https://github.com/trietsch/alfred-datetime-format-converter/commit/07aea79b9b815c29202a50c054a774aed8ccdfa6))
+
 # 1.0.0 (2026-01-21)
 
 
