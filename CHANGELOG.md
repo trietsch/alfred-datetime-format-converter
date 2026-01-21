@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/trietsch/alfred-datetime-format-converter/compare/v1.2.0...v1.3.0) (2026-01-21)
+
+
+### Features
+
+* add support for 2026-01-19T08:22:24.709Z timestamps; add various outputs ([8fa59ef](https://github.com/trietsch/alfred-datetime-format-converter/commit/8fa59ef712e28773bd0d231b5981a44b34578695))
+
 # [1.2.0](https://github.com/trietsch/alfred-datetime-format-converter/compare/v1.1.0...v1.2.0) (2026-01-21)
 
 
